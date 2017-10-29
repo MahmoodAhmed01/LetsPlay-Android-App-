@@ -1,10 +1,13 @@
 package com.letsplay.letsplay;
 
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -22,24 +25,16 @@ import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.facebook.login.widget.ProfilePictureView;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FacebookAuthProvider;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
+import com.koushikdutta.async.future.FutureCallback;
+import com.koushikdutta.ion.Ion;
 import com.letsplay.letsplay.models.User;
 import com.zookey.universalpreferences.UniversalPreferences;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 
 public class LoginActivity extends AppCompatActivity {
@@ -47,9 +42,6 @@ public class LoginActivity extends AppCompatActivity {
     private static final String TAG = "LoginActivity";
     public static final String KEY_USER_LOGIN = "user_login";
     private CallbackManager mCallbackManager;
-    private FirebaseAuth mAuth;
-    private FirebaseAuth.AuthStateListener mAuthListner;
-    DatabaseReference dbRef;
     private ProfilePictureView profilePictureView;
     private LinearLayout infoLayout;
     private LinearLayout loginLayout;
@@ -69,13 +61,22 @@ public class LoginActivity extends AppCompatActivity {
         FacebookSdk.sdkInitialize(getApplicationContext());
         setContentView(R.layout.activity_login);
 
-        Boolean aBoolean = UniversalPreferences.getInstance().get(KEY_USER_LOGIN, false);
-        if (aBoolean){
-            startMainActivity();
+
+        String status = UniversalPreferences.getInstance().get(KEY_USER_LOGIN, "CONTINUE");
+        if (status.equals("CONTINUE")) {
+
+        } else if (status.equals("SUCCESSFUL_LOGIN")) {
+            startMainActivityWithoutDelay();
+            return;
+        } else if (status.equals("SELECT_GAME")) {
+            startSportsActivity();
             return;
         }
 
-        //printHashKey();
+        Log.d("statusdivalue", status);
+
+
+        printHashKey();
 
         appName = (TextView) findViewById(R.id.app_name);
         profilePictureView = (ProfilePictureView) findViewById(R.id.fb_image);
@@ -88,8 +89,6 @@ public class LoginActivity extends AppCompatActivity {
             appName.setText("Lets Play..!");
             LoginManager.getInstance().logOut();
         }
-
-        mAuth = FirebaseAuth.getInstance();
 
         loginButton = (LoginButton) findViewById(R.id.fb_login_btn);
         loginButton.setReadPermissions("public_profile");
@@ -116,86 +115,38 @@ public class LoginActivity extends AppCompatActivity {
                 appName.setText("Error Occur..!");
             }
         });
-
-        final FirebaseUser user = mAuth.getCurrentUser();
-        if(user != null) {
-            handleUser(user);
-        }
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) {
-
-        }
-    }
-
-    private void handleUser(final FirebaseUser user) {
-
-        dbRef = FirebaseDatabase.getInstance().getReference("users");
-        Query query = dbRef.orderByChild("userId").equalTo(mAuth.getCurrentUser().getUid());
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.exists()) {
-                    User savedUser = dataSnapshot.child(user.getUid()).getValue(User.class);
-                    if (savedUser.getGames() != null) {
-                        loginSuccessful();
-                        startMainActivity();
-                    } else {
-                        startSportsActivity();
-                    }
-                    Log.d(TAG, "check this snapshot" + dataSnapshot.toString());
-                } else {
-                    LoginActivity.this.user.setUserId(mAuth.getCurrentUser().getUid());
-                    dbRef.child(user.getUid()).setValue(LoginActivity.this.user);
-                    startSportsActivity();
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-    }
-
-    private void handleFacebookAccessToken(AccessToken token) {
+    private void handleFacebookAccessToken(AccessToken token, final User user) {
         Log.d(TAG, "handleFacebookAccessToken:" + token);
-        AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
-        mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+
+        updateUI();
+
+        String url = App.url + "players";
+
+        Ion.with(this)
+                .load("POST", url)
+                .setJsonPojoBody(user)
+                .as(User.class)
+                .setCallback(new FutureCallback<User>() {
                     @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-
-                            // Sign in success, update UI with the signed-in user's information
-
-                            Log.d(TAG, "signInWithCredential:success");
-                            final FirebaseUser user = mAuth.getCurrentUser();
-                            handleUser(user);
-
-
-                            //childUserRef.setValue(data);
-
-
-                            //fetch data from database to decide that which activity has to be launched
-
-
-                            updateUI();
-                            loggedIn.setText("You have successfully logged in");
-
-
+                    public void onCompleted(Exception e, User user1) {
+                        if (e != null) {
+                            Toast.makeText(LoginActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                         } else {
-                            // If sign in fails, display a message to the user.
-                            Log.w(TAG, "signInWithCredential:failure", task.getException());
-                            Toast.makeText(LoginActivity.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
+                            UniversalPreferences.getInstance().put("userId", user1.getId());
+                            UniversalPreferences.getInstance().put("userName", user1.getName());
+                            UniversalPreferences.getInstance().put("pictureUrl", user1.getPictureUrl());
+                            if (user1.getGameId() != null) {
+                                UniversalPreferences.getInstance().put("selectedGame", user1.getGameId());
+                                UniversalPreferences.getInstance().put(KEY_USER_LOGIN, "SUCCESSFUL_LOGIN");
+                                startMainActivityWithoutDelay();
+                            } else {
+                                UniversalPreferences.getInstance().put(KEY_USER_LOGIN, "SELECT_GAME");
+                                startSportsActivity();
+                            }
                         }
 
-                        // ...
                     }
                 });
     }
@@ -246,7 +197,7 @@ public class LoginActivity extends AppCompatActivity {
                         user.setGender(getJsonValue(jsonObject, "gender"));
                         user.setDob(getJsonValue(jsonObject, "birthday"));
 
-                        handleFacebookAccessToken(userAccessToken);
+                        handleFacebookAccessToken(userAccessToken, user);
                     }
                 });
         Bundle parameters = new Bundle();
@@ -268,18 +219,27 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    private void loginSuccessful(){
-        UniversalPreferences.getInstance().put(KEY_USER_LOGIN, true);
+    private void startMainActivity() {
+        Handler handler = new Handler(getMainLooper());
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Intent mainActivity = new Intent(getApplicationContext(), MainActivity.class);
+                startActivity(mainActivity);
+                LoginActivity.this.finish();
+            }
+        }, 2000);
     }
 
-    private void startMainActivity(){
+    private void startMainActivityWithoutDelay() {
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         startActivity(intent);
-        this.finish();
+        LoginActivity.this.finish();
+
     }
 
 
-     /* public void printHashKey() {
+      public void printHashKey() {
         try {
             PackageInfo info = this.getPackageManager().getPackageInfo("com.letsplay.letsplay", PackageManager.GET_SIGNATURES);
             for (Signature signature : info.signatures) {
@@ -293,6 +253,6 @@ public class LoginActivity extends AppCompatActivity {
         } catch (Exception e) {
             Log.e(TAG, "printHashKey()", e);
         }
-    }*/
+    }
 
 }

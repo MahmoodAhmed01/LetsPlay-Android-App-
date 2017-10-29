@@ -2,11 +2,11 @@ package com.letsplay.letsplay;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.LinearLayout;
 
 import net.lucode.hackware.magicindicator.MagicIndicator;
 import net.lucode.hackware.magicindicator.ViewPagerHelper;
@@ -18,12 +18,11 @@ import net.lucode.hackware.magicindicator.buildins.commonnavigator.abs.IPagerTit
 import net.lucode.hackware.magicindicator.buildins.commonnavigator.indicators.LinePagerIndicator;
 import net.lucode.hackware.magicindicator.buildins.commonnavigator.titles.ColorTransitionPagerTitleView;
 import net.lucode.hackware.magicindicator.buildins.commonnavigator.titles.SimplePagerTitleView;
-import net.lucode.hackware.magicindicator.buildins.commonnavigator.titles.badge.BadgePagerTitleView;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements CreateMatchFragment.OnMatchCreatedListener {
 
     private static final String[] MAIN_MENU = new String[]{"MATCHES", "CREATE MATCH", "HISTORY", "PROFILE"};
     private List<String> mDataList = Arrays.asList(MAIN_MENU);
@@ -42,9 +41,8 @@ public class MainActivity extends AppCompatActivity {
         tabLayout = (MagicIndicator) findViewById(R.id.tabLayout);
 
         customAdapter = new CustomAdapter(getFragmentManager(), mDataList);
-        mViewPager.setAdapter(customAdapter);
-
         initMagicIndicator();
+        mViewPager.setAdapter(customAdapter);
 
     }
 
@@ -59,40 +57,39 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public IPagerTitleView getTitleView(Context context, final int index) {
-                final BadgePagerTitleView badgePagerTitleView = new BadgePagerTitleView(context);
 
                 SimplePagerTitleView simplePagerTitleView = new ColorTransitionPagerTitleView(context);
                 simplePagerTitleView.setText(mDataList.get(index));
-                simplePagerTitleView.setNormalColor(Color.parseColor("#88000000"));
-                simplePagerTitleView.setSelectedColor(Color.BLACK);
-
+                simplePagerTitleView.setNormalColor(Color.parseColor("#BEBEBE"));
+                simplePagerTitleView.setSelectedColor(Color.parseColor("#000000"));
+                simplePagerTitleView.setTypeface(null, Typeface.BOLD);
                 simplePagerTitleView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         mViewPager.setCurrentItem(index);
-                        badgePagerTitleView.setBadgeView(null);
                     }
                 });
-                badgePagerTitleView.setInnerPagerTitleView(simplePagerTitleView);
 
-                return badgePagerTitleView;
+                return simplePagerTitleView;
             }
 
             @Override
             public IPagerIndicator getIndicator(Context context) {
                 LinePagerIndicator indicator = new LinePagerIndicator(context);
-                indicator.setColors(Color.parseColor("#40c4ff"));
+                indicator.setColors(Color.parseColor("#29B97C"));
+                indicator.setLineHeight(UIUtil.dip2px(MainActivity.this, 3.0f));
                 return indicator;
+
             }
         });
 
         tabLayout.setNavigator(commonNavigator);
-        LinearLayout titleContainer = commonNavigator.getTitleContainer(); // must after setNavigator
-        titleContainer.setShowDividers(LinearLayout.SHOW_DIVIDER_MIDDLE);
-        titleContainer.setDividerPadding(UIUtil.dip2px(this, 15));
-        titleContainer.setDividerDrawable(getResources().getDrawable(R.drawable.simple_splitter));
         ViewPagerHelper.bind(tabLayout, mViewPager);
     }
 
+    @Override
+    public void onMatchCreated() {
+        mViewPager.setCurrentItem(0);
+    }
 }
 

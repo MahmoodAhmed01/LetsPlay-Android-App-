@@ -5,6 +5,8 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.support.v13.app.FragmentPagerAdapter;
 
+import com.zookey.universalpreferences.UniversalPreferences;
+
 import java.util.List;
 
 
@@ -37,7 +39,9 @@ public class CustomAdapter extends FragmentPagerAdapter {
         } else if (position == 2) {
             fragment = new HistoryFragment();
         } else if (position == 3) {
-            fragment = new ProfileFragment();
+
+            Integer userId = UniversalPreferences.getInstance().get("userId", -1);
+            fragment = ProfileFragment.newInstance(userId);
         }
 
         return fragment;

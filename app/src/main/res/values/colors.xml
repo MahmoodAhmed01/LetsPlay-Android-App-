@@ -1,14 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
 
-    <color name="mdtp_accent_color">#009688</color>
-    <color name="mdtp_accent_color_dark">#00796b</color>
+    <color name="app_background">#F8F8F8</color>
+    <color name="primary">#FFFFFF</color>
+    <color name="primary_dark">#29B97C</color>
+    <color name="accent">#1FD5AD</color>
+    <color name="primary_text">#000000</color>
+    <color name="secondary_text">#8A8A8A</color>
+    <color name="hint_text">#1FD5AD</color>
+    <color name="icons">#F7F7F7</color>
+    <color name="divider">#20000000</color>
 
-    <color name="white">#FFFFFF</color>
-    <color name="yellow">#FFFF00</color>
-    <color name="black">#000000</color>
+    <color name="loader_color">#1FD5AD</color>
+    <color name="error_text_color">#E60404</color>
+    <color name="button_text_color">#FFFFFF</color>
 
+
+    <!-- Toolbar colors -->
+    <color name="toolbar_title_color">#FFFFFF</color>
+    <color name="toolbar_icon_color">#FFFFFF</color>
+    <color name="toolbar_bg_color">#FFFFFF</color>
+
+    <color name="bn_background_color">#FCFCFC</color>
+    <color name="bn_selected_color">#010101</color>
+    <color name="bn_un_selected_color">#C0C0C0</color>
+
+    <!-- Linear Progress -->
+    <color name="linear_progress_color">#D13433</color>
+    <color name="linear_progress_background_color">#F8F8F8</color>
 </resources>

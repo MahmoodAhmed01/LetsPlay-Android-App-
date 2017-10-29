@@ -6,42 +6,54 @@ import java.util.Date;
  * Created by Mahmood on 7/1/2017.
  */
 
-public class Match {
+public class Match{
 
-    Game game;
-    String area;
+    Integer id;
+    Integer gameId;
+    Integer areaId;
     Date dateOfMatch;
-    String chellengePhrase;
-    String player1;
-    String player2;
-    MatchState matchState;
+    String challengePhrase;
+    Integer player1Id;
+    Integer player2Id;
+    MatchState state;
     Date createdAt;
     Date acceptedAt;
-    String matchWinner;
+    Integer winnerId;
     Integer player1Score;
     Integer player2Score;
+    Game game;
+    User player1;
+    User player2;
+    User winner;
 
     public Match(){
-        matchState = MatchState.CREATED;
+        state = MatchState.CREATED;
         player1Score = 0;
         player2Score = 0;
     }
 
-
-    public Game getGame() {
-        return game;
+    public Integer getId() {
+        return id;
     }
 
-    public void setGame(Game game) {
-        this.game = game;
+    public void setId(Integer id) {
+        this.id = id;
     }
 
-    public String getArea() {
-        return area;
+    public Integer getGameId() {
+        return gameId;
     }
 
-    public void setArea(String area) {
-        this.area = area;
+    public void setGameId(Integer gameId) {
+        this.gameId = gameId;
+    }
+
+    public Integer getAreaId() {
+        return areaId;
+    }
+
+    public void setAreaId(Integer areaId) {
+        this.areaId = areaId;
     }
 
     public Date getDateOfMatch() {
@@ -52,36 +64,36 @@ public class Match {
         this.dateOfMatch = dateOfMatch;
     }
 
-    public String getChellengePhrase() {
-        return chellengePhrase;
+    public String getChallengePhrase() {
+        return challengePhrase;
     }
 
-    public void setChellengePhrase(String chellengePhrase) {
-        this.chellengePhrase = chellengePhrase;
+    public void setChallengePhrase(String challengePhrase) {
+        this.challengePhrase = challengePhrase;
     }
 
-    public String getPlayer1() {
-        return player1;
+    public Integer getPlayer1Id() {
+        return player1Id;
     }
 
-    public void setPlayer1(String player1) {
-        this.player1 = player1;
+    public void setPlayer1Id(Integer player1Id) {
+        this.player1Id = player1Id;
     }
 
-    public String getPlayer2() {
-        return player2;
+    public Integer getPlayer2Id() {
+        return player2Id;
     }
 
-    public void setPlayer2(String player2) {
-        this.player2 = player2;
+    public void setPlayer2Id(Integer player2Id) {
+        this.player2Id = player2Id;
     }
 
-    public MatchState getMatchState() {
-        return matchState;
+    public MatchState getState() {
+        return state;
     }
 
-    public void setMatchState(MatchState matchState) {
-        this.matchState = matchState;
+    public void setState(MatchState state) {
+        this.state = state;
     }
 
     public Date getCreatedAt() {
@@ -100,12 +112,12 @@ public class Match {
         this.acceptedAt = acceptedAt;
     }
 
-    public String getMatchWinner() {
-        return matchWinner;
+    public Integer getWinnerId() {
+        return winnerId;
     }
 
-    public void setMatchWinner(String matchWinner) {
-        this.matchWinner = matchWinner;
+    public void setWinnerId(Integer winnerId) {
+        this.winnerId = winnerId;
     }
 
     public Integer getPlayer1Score() {
@@ -122,5 +134,37 @@ public class Match {
 
     public void setPlayer2Score(Integer player2Score) {
         this.player2Score = player2Score;
+    }
+
+    public Game getGame() {
+        return game;
+    }
+
+    public void setGame(Game game) {
+        this.game = game;
+    }
+
+    public User getPlayer1() {
+        return player1;
+    }
+
+    public void setPlayer1(User player1) {
+        this.player1 = player1;
+    }
+
+    public User getPlayer2() {
+        return player2;
+    }
+
+    public void setPlayer2(User player2) {
+        this.player2 = player2;
+    }
+
+    public User getWinner() {
+        return winner;
+    }
+
+    public void setWinner(User winner) {
+        this.winner = winner;
     }
 }

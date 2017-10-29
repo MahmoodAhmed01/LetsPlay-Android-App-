@@ -1,27 +1,18 @@
 package com.letsplay.letsplay.models;
 
-import java.util.List;
-
 /**
  * Created by Mahmood on 6/27/2017.
  */
 
 public class User {
     String facebookId;
-    String userId;
+    Integer id;
     String name;
     String dob;
     String pictureUrl;
     String gender;
-    List<Game> games;
+    Integer gameId;
 
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
 
 
     public String getFacebookId() {
@@ -64,11 +55,19 @@ public class User {
         this.gender = gender;
     }
 
-    public List<Game> getGames() {
-        return games;
+    public Integer getId() {
+        return id;
     }
 
-    public void setGames(List<Game> games) {
-        this.games = games;
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public Integer getGameId() {
+        return gameId;
+    }
+
+    public void setGameId(Integer gameId) {
+        this.gameId = gameId;
     }
 }

@@ -1,8 +1,10 @@
 package com.letsplay.letsplay;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,15 +13,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.letsplay.letsplay.models.Game;
+import com.koushikdutta.async.future.FutureCallback;
+import com.koushikdutta.ion.Ion;
 import com.letsplay.letsplay.models.Match;
 import com.letsplay.letsplay.models.MatchState;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
+import com.zookey.universalpreferences.UniversalPreferences;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -34,9 +36,19 @@ import butterknife.Unbinder;
 
 public class CreateMatchFragment extends Fragment implements DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener {
 
+    OnMatchCreatedListener mCallback;
 
-    @BindView(R.id.game_selection_spinner)
-    Spinner spGamesSpinner;
+    private static final String TAG = "CreateMatchFragment";
+
+    boolean isTimeSet = false;
+    boolean isDateSet = false;
+
+    public interface OnMatchCreatedListener {
+        public void onMatchCreated();
+    }
+
+    @BindView(R.id.tv_game_selection)
+    TextView tvSelectGame;
 
     @BindView(R.id.area_selection_spinner)
     Spinner spAreaSpinner;
@@ -47,16 +59,13 @@ public class CreateMatchFragment extends Fragment implements DatePickerDialog.On
     @BindView(R.id.tv_time)
     TextView tvTime;
 
-    @BindView(R.id.et_chellenge_phrase)
-    EditText etChellengePhrase;
+    @BindView(R.id.et_challenge_phrase)
+    EditText etChallengePhrase;
 
     @BindView(R.id.btn_create_match)
     Button btnCreateMatch;
 
     Unbinder unbinder;
-
-    ArrayAdapter<String> gamesAdapter;
-    String[] gamesList = {"Badminton", "Table Tennis", "Snooker"};
 
 
     ArrayAdapter<String> areaAdapter;
@@ -77,9 +86,9 @@ public class CreateMatchFragment extends Fragment implements DatePickerDialog.On
         View v = inflater.inflate(R.layout.create_match_fragment, container, false);
         unbinder = ButterKnife.bind(this, v);
 
-        gamesAdapter = new ArrayAdapter<String>(this.getActivity(), android.R.layout.simple_spinner_item, gamesList);
-        gamesAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
-        spGamesSpinner.setAdapter(gamesAdapter);
+
+        tvSelectGame.setText("Create Match of Your Selected Game");
+
 
         areaAdapter = new ArrayAdapter<String>(this.getActivity(), android.R.layout.simple_spinner_item, areaList);
         areaAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
@@ -122,22 +131,60 @@ public class CreateMatchFragment extends Fragment implements DatePickerDialog.On
         }
     }
 
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        MainActivity mainActivity = (MainActivity) activity;
+        mCallback = mainActivity;
+    }
+
     private void createMatch() {
 
-        final FirebaseAuth mAuth = FirebaseAuth.getInstance();
-        final DatabaseReference dbRef = FirebaseDatabase.getInstance().getReference("matches");
+        if (!isDateSet || !isTimeSet) {
+            Toast.makeText(getActivity(), "Set Time and Date of Match", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Log.d(TAG, matchDate.getTimeInMillis() + "match actual time");
+
+
+        long then = Calendar.getInstance().getTimeInMillis() + (long) (1 * 60 * 60 * 1000);
+        Log.d(TAG, then + "1 hour add to time");
+        if (matchDate.getTimeInMillis() < then) {
+            Toast.makeText(getActivity(), "Its too late to create Match", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        final Integer gameId = UniversalPreferences.getInstance().get("selectedGame", -1);
 
         Match match = new Match();
-        Integer pos = spGamesSpinner.getSelectedItemPosition();
-        match.setGame(Game.values()[pos]);
-        match.setArea(spAreaSpinner.getSelectedItem().toString());
-        match.setChellengePhrase(etChellengePhrase.getText().toString());
-        match.setPlayer1(mAuth.getCurrentUser().getUid());
-        match.setMatchState(MatchState.CREATED);
+        match.setGameId(gameId);
+        match.setAreaId(spAreaSpinner.getSelectedItemPosition()+1);
+        match.setChallengePhrase(etChallengePhrase.getText().toString());
+        Integer userId = UniversalPreferences.getInstance().get("userId", -1);
+        match.setPlayer1Id(userId);
+        match.setState(MatchState.CREATED);
         match.setDateOfMatch(matchDate.getTime());
         match.setCreatedAt(new Date());
 
-        dbRef.push().setValue(match);
+        String url = App.url + "matches";
+
+        Log.d("spinvalue", match.getGameId().toString());
+
+        Ion.with(this)
+                .load("POST", url)
+                .setJsonPojoBody(match)
+                .as(Match.class)
+                .setCallback(new FutureCallback<Match>() {
+                    @Override
+                    public void onCompleted(Exception e, Match result) {
+                        if (e != null){
+                            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                        } else {
+                            mCallback.onMatchCreated();
+                        }
+                    }
+                });
 
     }
 
@@ -147,14 +194,16 @@ public class CreateMatchFragment extends Fragment implements DatePickerDialog.On
         matchDate.set(Calendar.MONTH, monthOfYear);
         matchDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
-        tvDate.setText(dayOfMonth + "/" + monthOfYear + "/" + year);
+        tvDate.setText(dayOfMonth + "/" + (monthOfYear + 1) + "/" + year);
+        isDateSet = true;
     }
 
     @Override
     public void onTimeSet(TimePickerDialog view, int hourOfDay, int minute, int second) {
-        matchDate.set(Calendar.HOUR, hourOfDay);
+        matchDate.set(Calendar.HOUR_OF_DAY, hourOfDay);
         matchDate.set(Calendar.MINUTE, minute);
         matchDate.set(Calendar.SECOND, second);
+        isTimeSet = true;
 
         if (hourOfDay <= 12) {
             tvTime.setText(hourOfDay + ":" + minute + " AM");
