@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.letsplay.letsplay.SportsSelectionActivity">
+
+
+    <CheckBox
+        android:id="@+id/cb_badminton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Badminton" />
+
+    <CheckBox
+        android:id="@+id/cb_table_tennis"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Table Tennis" />
+
+    <CheckBox
+        android:id="@+id/cb_snooker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Snooker" />
+
+    <Button
+        android:id="@+id/btnSportSubmit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="250dp"
+        android:layout_marginLeft="50dp"
+        android:text="submit"
+        />
+
+</LinearLayout>

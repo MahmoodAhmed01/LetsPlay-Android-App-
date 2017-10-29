@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "795739269046",
+    "firebase_url": "https://letsplay-a625e.firebaseio.com",
+    "project_id": "letsplay-a625e",
+    "storage_bucket": "letsplay-a625e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:795739269046:android:986222bb32bd1e3d",
+        "android_client_info": {
+          "package_name": "com.letsplay.letsplay"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "795739269046-njpe4k95qfnbkpllca1e56odb3b1etj7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.letsplay.letsplay",
+            "certificate_hash": "a412582df8a7f6b2a54d3b14624caf265f97626d"
+          }
+        },
+        {
+          "client_id": "795739269046-sk73d2l516vafk8p77heuhereslps1gq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-0zwuU9HWF9dZjC_JQjD6VceBtWq2ibw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "795739269046-sk73d2l516vafk8p77heuhereslps1gq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
